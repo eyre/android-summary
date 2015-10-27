@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.media.AudioManager;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
@@ -28,6 +29,7 @@ import java.util.List;
 
 public class MediaRecorderActivity extends ActionBarActivity implements SurfaceHolder.Callback,View.OnClickListener,
         MediaRecorder.OnInfoListener,MediaRecorder.OnErrorListener{
+    private static final String TAG = "MediaRecorderActivity";
 
     MediaRecorder recorder;
     SurfaceView mCameraView;
@@ -71,6 +73,7 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
 
     private void initMediaRecorder(){
         String strVideoPath = Environment.getExternalStorageDirectory() + "/test_media_recorder.mp4";
+//        String strVideoPath = getFilesDir().getAbsolutePath() + "/test_media_recorder.mp4";
         File fileVideoPath = new File(strVideoPath);
         if(fileVideoPath.exists())
             fileVideoPath.delete();
@@ -84,14 +87,26 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
             recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
             recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
 
+            CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P);
             //视频相关设置
-            recorder.setVideoSize(640, 480);
-            recorder.setVideoEncodingBitRate(2 * 1024 * 1024);
+            recorder.setVideoSize(mCamera.getParameters().getPreviewSize().width, mCamera.getParameters().getPreviewSize().height);
+//            recorder.setVideoSize(640, 480);
+            recorder.setVideoEncodingBitRate(profile.videoBitRate / 2);
+//            recorder.setVideoEncodingBitRate(2 * 1024 * 1024);
             recorder.setVideoFrameRate(30);
             //音频相关设置
             recorder.setAudioChannels(1);
             recorder.setAudioEncodingBitRate(44100);
             recorder.setAudioSamplingRate(8*1024);
+
+//            recorder.setVideoEncodingBitRate(profile.videoBitRate / 2);
+//            recorder.setVideoFrameRate(profile.videoFrameRate);
+//            recorder.setVideoSize(profile.videoFrameWidth,
+//                    profile.videoFrameHeight);
+//
+//            recorder.setAudioChannels(profile.audioChannels);
+//            recorder.setAudioEncodingBitRate(profile.audioBitRate);
+//            recorder.setAudioSamplingRate(profile.audioSampleRate);
 
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             recorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
@@ -134,6 +149,7 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         try {
             mCamera = getCameraInstance();
+            initCamera();
             mCamera.setPreviewDisplay(surfaceHolder);
         } catch (IOException e) {
             e.printStackTrace();
@@ -151,7 +167,7 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
 //        Camera.Parameters parameters = mCamera.getParameters();
 //        parameters.setPreviewSize(640,480);
 //        mCamera.setParameters(parameters);
-        initCamera();
+
         mCamera.startPreview();
     }
 
@@ -165,16 +181,27 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
     private void initCamera() {
         if (mCamera != null) {
 
-            Camera.Parameters mParams = mCamera.getParameters();
+            Camera.Parameters parameters = mCamera.getParameters();
+            float ratio = 4/3.0f;
+            List<Camera.Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
+            Camera.Size ratioSize = null;
+            for(Camera.Size size:mSupportedPreviewSizes){
+                if(size.width == size.height * ratio){
+                    if(ratioSize==null || ratioSize.width < size.width){
+                        ratioSize = size;
+                        Log.i(TAG, "width:" + size.width + ",height:" + size.height);
+                    }
+                }
+            }
+            Log.i(TAG,"ratio width:"+ratioSize.width+",height:"+ratioSize.height);
+            parameters.setPreviewSize(640, 480);
 
-            mParams.setPreviewSize(640, 480);
-//            mCamera.setDisplayOrientation(90);
-            List<String> focusModes = mParams.getSupportedFocusModes();
+            List<String> focusModes = parameters.getSupportedFocusModes();
             if (focusModes.contains("continuous-video")) {
-                mParams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+                parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
             }
 
-            mCamera.setParameters(mParams);
+            mCamera.setParameters(parameters);
         }
     }
 
@@ -225,8 +252,8 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
 
 //                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,oldStreamVolume, AudioManager.FLAG_PLAY_SOUND);
                 btnControl.setText("start");
-//                Intent intent = new Intent(this,TextureviewActivity.class);
-//                startActivity(intent);
+                Intent intent = new Intent(this,TextureviewActivity.class);
+                startActivity(intent);
             }
             recordState = !recordState;
         }

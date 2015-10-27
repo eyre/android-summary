@@ -42,6 +42,7 @@ public class TextureviewActivity extends ActionBarActivity implements TextureVie
     private void prepare(Surface surface) {
         try {
             String strVideoPath = Environment.getExternalStorageDirectory() + "/test_media_recorder.mp4";
+//            String strVideoPath = getFilesDir().getAbsolutePath() + "/test_media_recorder.mp4";
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
