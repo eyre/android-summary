@@ -22,9 +22,12 @@ import android.widget.RelativeLayout;
 
 import com.example.joker.summary.R;
 import com.example.joker.summary.constants.SobrrConstants;
+import com.example.joker.summary.util.CommonUtil;
+import com.github.lassana.recorder.AudioRecorder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MediaRecorderActivity extends ActionBarActivity implements SurfaceHolder.Callback,View.OnClickListener,
@@ -43,6 +46,11 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
     private static final int CAMERA_FACING_FRONT = android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT;
     private int mCurrentCamera;
     private boolean recordState;
+    String videoName = "test_media_recorder";
+    String strVideoPath = Environment.getExternalStorageDirectory() + "/"+videoName+".mp4";
+    String strTempVideoPath = Environment.getExternalStorageDirectory() + "/"+videoName+"1.mp4";
+//    List<String> videoPathList;
+//        String strVideoPath = getFilesDir().getAbsolutePath() + "/test_media_recorder.mp4";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +66,9 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
         audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
         recordState = false;
         btnControl.setText("start");
+
+//        videoPathList = new ArrayList<>();
+        AudioRecorder recorder = AudioRecorder.build(this,strVideoPath);
     }
 
     private void initContentView(){
@@ -71,10 +82,8 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
         btnControl.setOnClickListener(this);
     }
 
-    private void initMediaRecorder(){
-        String strVideoPath = Environment.getExternalStorageDirectory() + "/test_media_recorder.mp4";
-//        String strVideoPath = getFilesDir().getAbsolutePath() + "/test_media_recorder.mp4";
-        File fileVideoPath = new File(strVideoPath);
+    private void initMediaRecorder(String videoPath){
+        File fileVideoPath = new File(videoPath);
         if(fileVideoPath.exists())
             fileVideoPath.delete();
         try {
@@ -115,7 +124,7 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
             recorder.setOrientationHint(90);
 
             recorder.setPreviewDisplay(mHolder.getSurface());
-            recorder.setOutputFile(strVideoPath);
+            recorder.setOutputFile(videoPath);
 
             recorder.prepare();
         }catch (Exception e){
@@ -123,26 +132,17 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_media_recorder, menu);
-        return true;
-    }
+    protected void pause(){
+        recorder.stop();
+        recorder.release();
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        File tempFile= new File(strTempVideoPath);
+        if(tempFile.exists()){
+            CommonUtil.mergeMediaFile(strVideoPath,strTempVideoPath);
+            tempFile.delete();
         }
 
-        return super.onOptionsItemSelected(item);
+        initMediaRecorder(strTempVideoPath);
     }
 
     @Override
@@ -155,7 +155,7 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
             e.printStackTrace();
             clearCamera();
         }
-        initMediaRecorder();
+        initMediaRecorder(strVideoPath);
     }
 
     @Override
@@ -247,13 +247,14 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
 
                 btnControl.setText("pause");
             }else{
-                recorder.stop();
+                pause();
+//                recorder.stop();
 //                mCamera.reconnect();
 
 //                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,oldStreamVolume, AudioManager.FLAG_PLAY_SOUND);
                 btnControl.setText("start");
-                Intent intent = new Intent(this,TextureviewActivity.class);
-                startActivity(intent);
+//                Intent intent = new Intent(this,TextureviewActivity.class);
+//                startActivity(intent);
             }
             recordState = !recordState;
         }
