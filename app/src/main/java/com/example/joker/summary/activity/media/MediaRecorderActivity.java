@@ -50,8 +50,6 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
     String videoName = "test_media_recorder";
     String strVideoPath = Environment.getExternalStorageDirectory() + "/"+videoName+".mp4";
     String strTempVideoPath = Environment.getExternalStorageDirectory() + "/"+videoName+"1.mp4";
-//    List<String> videoPathList;
-//        String strVideoPath = getFilesDir().getAbsolutePath() + "/test_media_recorder.mp4";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +69,6 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
         File fileVideoPath = new File(strVideoPath);
         if(fileVideoPath.exists())
             fileVideoPath.delete();
-//        videoPathList = new ArrayList<>();
-//        AudioRecorder recorder = AudioRecorder.build(this,strVideoPath);
     }
 
     private void initContentView(){
@@ -111,12 +107,8 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
 
     private void startRecord(){
         try {
-            if(recorder == null){
-                recorder = new MediaRecorder();
-                recorder.setOnInfoListener(this);
-            }else{
-                recorder.reset();
-            }
+            recorder = new MediaRecorder();
+            recorder.setOnInfoListener(this);
             recorder.setOnErrorListener(this);
 
             recorder.setCamera(mCamera);
@@ -166,14 +158,11 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
     }
 
     protected void pauseRecord(){
-        recorder.setOnInfoListener(null);
-
         recorder.stop();
         recorder.release();
 
         File tempFile= new File(strTempVideoPath);
         if(tempFile.exists()){
-//            CommonUtil.mergeMediaFile(strVideoPath,strTempVideoPath);
             Mp4ParserWrapper.append(strVideoPath,strTempVideoPath);
             tempFile.delete();
         }
@@ -276,13 +265,11 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
 //                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,0,AudioManager.FLAG_PLAY_SOUND);
 
                 mCamera.unlock();
-//                recorder.start();
                 startRecord();
 
                 btnControl.setText("pause");
             }else{
                 pauseRecord();
-//                recorder.stop();
 //                mCamera.reconnect();
 
 //                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,oldStreamVolume, AudioManager.FLAG_PLAY_SOUND);
