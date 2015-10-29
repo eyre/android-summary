@@ -24,6 +24,7 @@ import com.example.joker.summary.R;
 import com.example.joker.summary.constants.SobrrConstants;
 import com.example.joker.summary.util.CommonUtil;
 import com.github.lassana.recorder.AudioRecorder;
+import com.github.lassana.recorder.Mp4ParserWrapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,8 +68,11 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
         recordState = false;
         btnControl.setText("start");
 
+        File fileVideoPath = new File(strVideoPath);
+        if(fileVideoPath.exists())
+            fileVideoPath.delete();
 //        videoPathList = new ArrayList<>();
-        AudioRecorder recorder = AudioRecorder.build(this,strVideoPath);
+//        AudioRecorder recorder = AudioRecorder.build(this,strVideoPath);
     }
 
     private void initContentView(){
@@ -82,31 +86,70 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
         btnControl.setOnClickListener(this);
     }
 
-    private void initMediaRecorder(String videoPath){
-        File fileVideoPath = new File(videoPath);
-        if(fileVideoPath.exists())
-            fileVideoPath.delete();
+//    private void initMediaRecorder(){
+//        File fileVideoPath = new File(strVideoPath);
+//        if(fileVideoPath.exists())
+//            fileVideoPath.delete();
+//        try {
+//            recorder = new MediaRecorder();
+//            recorder.setOnErrorListener(this);
+//            recorder.setOnInfoListener(this);
+//
+//            recorder.setCamera(mCamera);
+//            setRecorderParams(recorder);
+//            //后摄像头拍摄旋转90度
+//            recorder.setOrientationHint(90);
+//
+//            recorder.setPreviewDisplay(mHolder.getSurface());
+//            recorder.setOutputFile(videoPath);
+//
+//            recorder.prepare();
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//    }
+
+    private void startRecord(){
         try {
-            recorder = new MediaRecorder();
+            if(recorder == null){
+                recorder = new MediaRecorder();
+                recorder.setOnInfoListener(this);
+            }else{
+                recorder.reset();
+            }
             recorder.setOnErrorListener(this);
-            recorder.setOnInfoListener(this);
 
             recorder.setCamera(mCamera);
-            recorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-            recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            setRecorderParams(recorder);
+            //后摄像头拍摄旋转90度
+            recorder.setOrientationHint(90);
 
-            CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P);
-            //视频相关设置
-            recorder.setVideoSize(mCamera.getParameters().getPreviewSize().width, mCamera.getParameters().getPreviewSize().height);
-//            recorder.setVideoSize(640, 480);
-            recorder.setVideoEncodingBitRate(profile.videoBitRate / 2);
+            recorder.setPreviewDisplay(mHolder.getSurface());
+            recorder.setOutputFile(strTempVideoPath);
+
+            recorder.prepare();
+            recorder.start();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void setRecorderParams(MediaRecorder recorder){
+        recorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+        recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+
+        CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P);
+        //视频相关设置
+//        recorder.setVideoSize(mCamera.getParameters().getPreviewSize().width, mCamera.getParameters().getPreviewSize().height);
+        recorder.setVideoSize(640, 480);
+        recorder.setVideoEncodingBitRate(profile.videoBitRate / 2);
 //            recorder.setVideoEncodingBitRate(2 * 1024 * 1024);
-            recorder.setVideoFrameRate(30);
-            //音频相关设置
-            recorder.setAudioChannels(1);
-            recorder.setAudioEncodingBitRate(44100);
-            recorder.setAudioSamplingRate(8*1024);
+        recorder.setVideoFrameRate(30);
+        //音频相关设置
+        recorder.setAudioChannels(1);
+        recorder.setAudioEncodingBitRate(44100);
+        recorder.setAudioSamplingRate(8*1024);
 
 //            recorder.setVideoEncodingBitRate(profile.videoBitRate / 2);
 //            recorder.setVideoFrameRate(profile.videoFrameRate);
@@ -117,32 +160,23 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
 //            recorder.setAudioEncodingBitRate(profile.audioBitRate);
 //            recorder.setAudioSamplingRate(profile.audioSampleRate);
 
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-            recorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
-            recorder.setMaxDuration(15000);
-            //后摄像头拍摄旋转90度
-            recorder.setOrientationHint(90);
-
-            recorder.setPreviewDisplay(mHolder.getSurface());
-            recorder.setOutputFile(videoPath);
-
-            recorder.prepare();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        recorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
+        recorder.setMaxDuration(5000);
     }
 
-    protected void pause(){
+    protected void pauseRecord(){
+        recorder.setOnInfoListener(null);
+
         recorder.stop();
         recorder.release();
 
         File tempFile= new File(strTempVideoPath);
         if(tempFile.exists()){
-            CommonUtil.mergeMediaFile(strVideoPath,strTempVideoPath);
+//            CommonUtil.mergeMediaFile(strVideoPath,strTempVideoPath);
+            Mp4ParserWrapper.append(strVideoPath,strTempVideoPath);
             tempFile.delete();
         }
-
-        initMediaRecorder(strTempVideoPath);
     }
 
     @Override
@@ -155,7 +189,6 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
             e.printStackTrace();
             clearCamera();
         }
-        initMediaRecorder(strVideoPath);
     }
 
     @Override
@@ -243,11 +276,12 @@ public class MediaRecorderActivity extends ActionBarActivity implements SurfaceH
 //                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,0,AudioManager.FLAG_PLAY_SOUND);
 
                 mCamera.unlock();
-                recorder.start();
+//                recorder.start();
+                startRecord();
 
                 btnControl.setText("pause");
             }else{
-                pause();
+                pauseRecord();
 //                recorder.stop();
 //                mCamera.reconnect();
 
