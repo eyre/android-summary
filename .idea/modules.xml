@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/android-summary.iml" filepath="$PROJECT_DIR$/android-summary.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/recorder/recorder.iml" filepath="$PROJECT_DIR$/recorder/recorder.iml" />
-      <module fileurl="file://$PROJECT_DIR$/summary.iml" filepath="$PROJECT_DIR$/summary.iml" />
     </modules>
   </component>
 </project>

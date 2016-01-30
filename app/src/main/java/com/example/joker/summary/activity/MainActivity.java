@@ -37,6 +37,7 @@ public class MainActivity extends ActionBarActivity {
 
         titleList.add("Environment");
         titleList.add("Media");
+        titleList.add("Util");
 
         List envList = new ArrayList();
         envList.add("Directory");
@@ -44,6 +45,9 @@ public class MainActivity extends ActionBarActivity {
         List mediaList = new ArrayList();
         mediaList.add("MediaRecorder");
         itemTitleList.add(mediaList);
+        List utilList = new ArrayList();
+        utilList.add("TcpUtil");
+        itemTitleList.add(utilList);
 
         ExpandableListAdapter summaryListViewAdapter = new ExampleExpandableListAdapter(
                 this, titleList, itemTitleList);

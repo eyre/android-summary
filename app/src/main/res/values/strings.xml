@@ -8,4 +8,5 @@
     <string name="title_activity_textureview">Textureview</string>
     <string name="title_activity_media">MediaActivity</string>
     <string name="title_activity_ffmpeg">FFmpegActivity</string>
+    <string name="title_activity_tcp">TcpActivity</string>
 </resources>

@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ExpandableListView;
 
 import com.example.joker.summary.activity.DirectoryActivity;
+import com.example.joker.summary.activity.TcpActivity;
 import com.example.joker.summary.activity.media.MediaActivity;
 import com.example.joker.summary.activity.media.MediaRecorderActivity;
 
@@ -23,7 +24,7 @@ public class OnExampleItemClickListener implements
         boolean result = false;
 
         if (groupPosition == 0) {
-            //quick start
+            //Directory
             if (childPosition == 0) {
                 intent = new Intent(this.mainActivity, DirectoryActivity.class);
             } else if (childPosition == 1) {
@@ -31,27 +32,19 @@ public class OnExampleItemClickListener implements
             }
         }
         else if (groupPosition == 1) {
-            // simple upload
+            //Media
             if (childPosition == 0) {
                 intent = new Intent(this.mainActivity,
                         MediaActivity.class);
             }
         }
-//        else if (groupPosition == 2) {
-//            // advanced upload
-//            if (childPosition == 0) {
-//                intent = new Intent(this.mainActivity,
-//                        ResumableUploadWithoutKeyActivity.class);
-//            } else if (childPosition == 1) {
-//                intent = new Intent(this.mainActivity,
-//                        ResumableUploadWithKeyActivity.class);
-//            } else if (childPosition == 2) {
-//                intent = new Intent(this.mainActivity,
-//                        CallbackUploadWithKeyInUrlFormatActivity.class);
-//            } else if (childPosition == 3) {
-//                intent = new Intent(this.mainActivity,
-//                        CallbackUploadWithKeyInJsonFormatActivity.class);
-//            }
+        else if (groupPosition == 2) {
+            //Util
+            if (childPosition == 0) {
+                intent = new Intent(this.mainActivity,
+                        TcpActivity.class);
+            }
+        }
 //        } else if (groupPosition == 3) {
 //            // audio video play
 //            if (childPosition == 0) {
